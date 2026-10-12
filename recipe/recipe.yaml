@@ -20,6 +20,8 @@ build:
     interpreter: nu
     content:
       - let prefix = $env.LIBRARY_PREFIX? | default $env.PREFIX
+      # CMake preserves jitterentropy's required -O0 after conda's CFLAGS.
+      - if $nu.os-info.name != "windows" { $env.AWS_LC_SYS_CMAKE_BUILDER = "1"; $env.CMAKE_GENERATOR = "Ninja" }
       # build main app and generate license data
       - cd crates/merman-cli
       - ^cargo auditable install --path=. --root=($prefix) --no-track --locked --bins
@@ -39,6 +41,10 @@ requirements:
     - cargo-auditable
     - cargo-bundle-licenses
     - nushell
+    - if: unix
+      then:
+        - cmake
+        - ninja
     - if: win and arm64
       then: clang
 
